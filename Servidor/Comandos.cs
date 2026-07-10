@@ -17,49 +17,91 @@ public class Comandos
         switch (partes[0].ToLower())
         {
             case "saldo":
-                return $"Saldo atual: R$ {banco.ConsultarSaldo():F2}";
+
+                if (partes.Length != 2)
+                    return "Uso: saldo <conta>";
+
+                if (!int.TryParse(partes[1], out int contaSaldo))
+                    return "Número da conta inválido.";
+
+                return banco.ConsultarSaldo(contaSaldo);
 
             case "depositar":
 
-                if (partes.Length < 2)
-                    return "Uso: depositar <valor>";
+                if (partes.Length != 3)
+                    return "Uso: depositar <conta> <valor>";
 
-                if (!decimal.TryParse(partes[1], out decimal deposito))
+                if (!int.TryParse(partes[1], out int contaDeposito))
+                    return "Número da conta inválido.";
+
+                if (!decimal.TryParse(partes[2], out decimal valorDeposito))
                     return "Valor inválido.";
 
-                return banco.Depositar(deposito);
+                return banco.Depositar(contaDeposito, valorDeposito);
 
             case "sacar":
 
-                if (partes.Length < 2)
-                    return "Uso: sacar <valor>";
+                if (partes.Length != 3)
+                    return "Uso: sacar <conta> <valor>";
 
-                if (!decimal.TryParse(partes[1], out decimal saque))
+                if (!int.TryParse(partes[1], out int contaSaque))
+                    return "Número da conta inválido.";
+
+                if (!decimal.TryParse(partes[2], out decimal valorSaque))
                     return "Valor inválido.";
 
-                return banco.Sacar(saque);
+                return banco.Sacar(contaSaque, valorSaque);
+            case "transferir":
 
-            case "ajuda":
+                if (partes.Length != 4)
+                    return "Uso: transferir <contaOrigem> <contaDestino> <valor>";
+
+                if (!int.TryParse(partes[1], out int contaOrigem))
+                    return "Conta de origem inválida.";
+
+                if (!int.TryParse(partes[2], out int contaDestino))
+                    return "Conta de destino inválida.";
+
+                if (!decimal.TryParse(partes[3], out decimal valorTransferencia))
+                    return "Valor inválido.";
+
+                return banco.Transferir(contaOrigem, contaDestino, valorTransferencia);
             case "help":
+            case "ajuda":
 
                 return """
-=========================
+==================================
 COMANDOS DISPONÍVEIS
-=========================
+==================================
 
-saldo
+Contas existentes:
 
-depositar <valor>
+1001
+1002
+1003
 
-sacar <valor>
+Consultar saldo:
 
-help
+saldo 1001
+
+Depositar:
+
+depositar 1001 200
+
+Sacar:
+
+sacar 1001 50
+
+Transferir:
+
+transferir 1001 1002 300
+
+Encerrar cliente:
 
 sair
 """;
 
             default:
-
                 return "Comando desconhecido. Digite 'help'.";
         }
     }
