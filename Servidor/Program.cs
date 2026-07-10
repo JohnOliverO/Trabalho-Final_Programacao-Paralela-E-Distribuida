@@ -5,11 +5,12 @@ TcpListener servidor = new TcpListener(IPAddress.Any, 5000);
 
 servidor.Start();
 
-Console.WriteLine("================================");
-Console.WriteLine("Servidor iniciado");
-Console.WriteLine("================================");
-
 Banco banco = new Banco();
+
+Console.WriteLine("====================================");
+Console.WriteLine(" SERVIDOR BANCÁRIO");
+Console.WriteLine(" Porta: 5000");
+Console.WriteLine("====================================");
 
 while (true)
 {
@@ -17,8 +18,5 @@ while (true)
 
     ClienteHandler handler = new ClienteHandler(cliente, banco);
 
-    Task.Run(() =>
-    {
-        handler.Atender();
-    });
+    _ = Task.Run(handler.Atender);
 }

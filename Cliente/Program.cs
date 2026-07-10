@@ -1,31 +1,43 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 
-Console.WriteLine("Conectando ao servidor...");
+Console.WriteLine("==========================");
+Console.WriteLine("CLIENTE BANCÁRIO");
+Console.WriteLine("==========================");
 
-TcpClient cliente = new TcpClient();
+TcpClient cliente = new();
 
 cliente.Connect("127.0.0.1", 5000);
 
 NetworkStream stream = cliente.GetStream();
 
-Console.Write("Digite uma mensagem: ");
+Console.WriteLine("Conectado ao servidor.");
 
-string mensagem = Console.ReadLine() ?? "";
+while (true)
+{
+    Console.Write("\n> ");
 
-byte[] dados = Encoding.UTF8.GetBytes(mensagem);
+    string? comando = Console.ReadLine();
 
-stream.Write(dados, 0, dados.Length);
+    if (string.IsNullOrWhiteSpace(comando))
+        continue;
 
-byte[] buffer = new byte[1024];
+    if (comando.ToLower() == "sair")
+        break;
 
-int bytesLidos = stream.Read(buffer, 0, buffer.Length);
+    byte[] dados = Encoding.UTF8.GetBytes(comando);
 
-string resposta = Encoding.UTF8.GetString(buffer, 0, bytesLidos);
+    stream.Write(dados);
 
-Console.WriteLine();
+    byte[] buffer = new byte[1024];
 
-Console.WriteLine(resposta);
+    int bytesLidos = stream.Read(buffer);
+
+    string resposta = Encoding.UTF8.GetString(buffer, 0, bytesLidos);
+
+    Console.WriteLine();
+    Console.WriteLine(resposta);
+}
 
 cliente.Close();
 

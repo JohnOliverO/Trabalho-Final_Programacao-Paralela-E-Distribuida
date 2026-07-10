@@ -3,85 +3,55 @@ using System.Text;
 
 public class ClienteHandler
 {
-    private TcpClient cliente;
-    private Banco banco;
+    private readonly TcpClient cliente;
+    private readonly Comandos comandos;
 
     public ClienteHandler(TcpClient cliente, Banco banco)
     {
         this.cliente = cliente;
-        this.banco = banco;
+        comandos = new Comandos(banco);
     }
 
     public void Atender()
     {
-        Console.WriteLine("Cliente conectado!");
-        Console.WriteLine($"Thread: {Environment.CurrentManagedThreadId}");
+        Console.WriteLine($"Cliente conectado (Thread {Environment.CurrentManagedThreadId})");
 
         try
         {
             NetworkStream stream = cliente.GetStream();
 
-            byte[] buffer = new byte[1024];
-
-            int bytesLidos = stream.Read(buffer, 0, buffer.Length);
-
-            string mensagem = Encoding.UTF8.GetString(buffer, 0, bytesLidos);
-
-            Console.WriteLine($"Mensagem: {mensagem}");
-
-            string resposta;
-
-            string[] partes = mensagem.Split(' ');
-
-            switch (partes[0].ToLower())
+            while (cliente.Connected)
             {
-                case "saldo":
+                byte[] buffer = new byte[1024];
 
-                    resposta = $"Saldo atual: R$ {banco.ConsultarSaldo():F2}";
+                int bytesLidos = stream.Read(buffer);
+
+                if (bytesLidos == 0)
                     break;
 
-                case "depositar":
+                string mensagem = Encoding.UTF8.GetString(buffer, 0, bytesLidos);
 
-                    if (partes.Length < 2 || !decimal.TryParse(partes[1], out decimal deposito))
-                        resposta = "Uso: depositar valor";
-                    else
-                        resposta = banco.Depositar(deposito);
+                Console.WriteLine(
+                    $"[{DateTime.Now:HH:mm:ss}] " +
+                    $"Thread {Environment.CurrentManagedThreadId}: {mensagem}"
+                );
 
-                    break;
+                string resposta = comandos.Processar(mensagem);
 
-                case "sacar":
+                byte[] respostaBytes = Encoding.UTF8.GetBytes(resposta);
 
-                    if (partes.Length < 2 || !decimal.TryParse(partes[1], out decimal saque))
-                        resposta = "Uso: sacar valor";
-                    else
-                        resposta = banco.Sacar(saque);
-
-                    break;
-
-                default:
-
-                    resposta =
-            @"Comandos:
-
-            saldo
-
-            depositar 100
-
-            sacar 50";
-                    break;
+                stream.Write(respostaBytes);
             }
-
-            byte[] respostaBytes = Encoding.UTF8.GetBytes(resposta);
-
-            stream.Write(respostaBytes);
-
-            cliente.Close();
-
-            Console.WriteLine("Cliente desconectado.");
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            cliente.Close();
+
+            Console.WriteLine($"Cliente desconectado (Thread {Environment.CurrentManagedThreadId})");
         }
     }
 }

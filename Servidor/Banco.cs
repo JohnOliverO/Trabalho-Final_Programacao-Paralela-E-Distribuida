@@ -2,6 +2,8 @@ public class Banco
 {
     private decimal saldo = 1000m;
 
+    private readonly object saldoLock = new();
+
     public decimal ConsultarSaldo()
     {
         return saldo;
@@ -9,28 +11,38 @@ public class Banco
 
     public string Depositar(decimal valor)
     {
-        saldo += valor;
+        lock (saldoLock)
+        {
+            Console.WriteLine($"[{Environment.CurrentManagedThreadId}] Depositando R$ {valor}");
 
-        return $"Depósito realizado.\nSaldo atual: R$ {saldo:F2}";
+            Thread.Sleep(500);
+
+            saldo += valor;
+
+            Console.WriteLine($"[{Environment.CurrentManagedThreadId}] Novo saldo: {saldo}");
+
+            return $"Depósito realizado.\nSaldo atual: R$ {saldo:F2}";
+        }
     }
 
     public string Sacar(decimal valor)
     {
-        Console.WriteLine($"[{Environment.CurrentManagedThreadId}] Tentando sacar R$ {valor}");
-
-        if (saldo >= valor)
+        lock (saldoLock)
         {
-            Console.WriteLine($"[{Environment.CurrentManagedThreadId}] Saldo antes: {saldo}");
+            Console.WriteLine($"[{Environment.CurrentManagedThreadId}] Sacando R$ {valor}");
 
             Thread.Sleep(500);
 
-            saldo -= valor;
+            if (saldo >= valor)
+            {
+                saldo -= valor;
 
-            Console.WriteLine($"[{Environment.CurrentManagedThreadId}] Saldo depois: {saldo}");
+                Console.WriteLine($"[{Environment.CurrentManagedThreadId}] Novo saldo: {saldo}");
 
-            return $"Saque realizado.\nSaldo atual: R$ {saldo:F2}";
+                return $"Saque realizado.\nSaldo atual: R$ {saldo:F2}";
+            }
+
+            return $"Saldo insuficiente.\nSaldo atual: R$ {saldo:F2}";
         }
-
-        return $"Saldo insuficiente.\nSaldo atual: R$ {saldo:F2}";
     }
 }
