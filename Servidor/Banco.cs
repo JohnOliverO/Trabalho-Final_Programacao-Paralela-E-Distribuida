@@ -1,3 +1,4 @@
+//Trabalho-Final_Programação-Paralela-E-Distribuída/Servidor/Banco.cs
 using System.Collections.Generic;
 using System.Threading;
 
@@ -27,8 +28,12 @@ public class Banco
 
     public string Depositar(int numeroConta, decimal valor)
     {
+        // Região crítica protegida por lock
         lock (saldoLock)
         {
+            if (valor <= 0)
+                return "O valor deve ser maior que zero.";
+
             if (!contas.ContainsKey(numeroConta))
                 return "Conta não encontrada.";
 
@@ -46,8 +51,12 @@ public class Banco
 
     public string Sacar(int numeroConta, decimal valor)
     {
+        // Região crítica protegida por lock
         lock (saldoLock)
         {
+            if (valor <= 0)
+                return "O valor deve ser maior que zero.";
+
             if (!contas.ContainsKey(numeroConta))
                 return "Conta não encontrada.";
 
@@ -69,8 +78,12 @@ public class Banco
     }
     public string Transferir(int contaOrigem, int contaDestino, decimal valor)
     {
+        // Região crítica protegida por lock
         lock (saldoLock)
         {
+            if (valor <= 0)
+                return "O valor deve ser maior que zero.";
+
             if (!contas.ContainsKey(contaOrigem))
                 return "Conta de origem não encontrada.";
 

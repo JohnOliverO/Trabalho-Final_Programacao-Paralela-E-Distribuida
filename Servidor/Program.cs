@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿//Trabalho-Final_Programação-Paralela-E-Distribuída/Servidor/Program.cs
+using System.Net;
 using System.Net.Sockets;
 
 TcpListener servidor = new TcpListener(IPAddress.Any, 5000);
@@ -18,5 +19,6 @@ while (true)
 
     ClienteHandler handler = new ClienteHandler(cliente, banco);
 
+    // Cria uma Task para atender cada cliente conectado
     _ = Task.Run(handler.Atender);
 }

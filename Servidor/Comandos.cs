@@ -1,3 +1,4 @@
+//Trabalho-Final_Programação-Paralela-E-Distribuída/Servidor/Comandos.cs
 public class Comandos
 {
     private readonly Banco banco;
